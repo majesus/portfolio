@@ -1,15 +1,71 @@
 [
   {
-    "id": 0,
-    "title": "Manolo",
+    "id": "paper_2024",
+    "title": "Manolo 2024",
+    "role": "Investigación",
+    "year": "2024",
+    "tech": "Artículos / Papers",
+    "client": "IEEE / Nature",
+    "img": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=500&q=80",
+    "details": [
+      "Neural Architectures in WebGL Environments (2024) - IEEE Viz",
+      "Game Juice: Enhancing UX through Micro-interactions (2023) - CHI Conf",
+      "Ethical AI in Creative Coding (In Review)",
+      "Performance Optimization for Mobile Canvases (2022)",
+      "A Study on Force-Directed Layouts for UX",
+      "Neural Architectures in WebGL Environments (2024) - IEEE Viz",
+      "Game Juice: Enhancing UX through Micro-interactions (2023) - CHI Conf",
+      "Ethical AI in Creative Coding (In Review)",
+      "Performance Optimization for Mobile Canvases (2022)",
+      "A Study on Force-Directed Layouts for UX",
+"Neural Architectures in WebGL Environments (2024) - IEEE Viz",
+      "Game Juice: Enhancing UX through Micro-interactions (2023) - CHI Conf",
+      "Ethical AI in Creative Coding (In Review)",
+      "Performance Optimization for Mobile Canvases (2022)",
+      "A Study on Force-Directed Layouts for UX"
+    ]
+  },
+  {
+    "id": "teaching",
+    "title": "Docencia",
+    "role": "Profesor Titular",
+    "year": "Actualidad",
+    "tech": "Asignaturas",
+    "client": "Universidad Tech",
+    "img": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&q=80",
+    "details": [
+      "Programación Creativa I y II",
+      "Diseño de Interfaces Avanzadas (UX/UI)",
+      "Matemáticas para Videojuegos",
+      "Sistemas de Partículas y Simulaciones"
+    ]
+  },
+  {
+    "id": "cv_summary",
+    "title": "Resumen CV",
+    "role": "Perfil",
+    "year": "2025",
+    "tech": "Overview",
+    "client": "Bio",
+    "img": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80",
+    "details": [
+      "Doctorado en Ciencias de la Computación (2020)",
+      "Más de 10 años de experiencia en Frontend Creativo",
+      "Premiado con Awwwards Site of the Day (x3)",
+      "Especialista en WebGL y Three.js"
+    ]
+  },
+  {
+    "id": 1,
+    "title": "Neon Genesis",
     "role": "3D Design",
     "year": "2024",
-    "tech": "Manolo, Octane",
+    "tech": "Blender, Octane",
     "client": "Personal",
     "img": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=500&q=80"
   },
   {
-    "id": 1,
+    "id": 2,
     "title": "Void Walker",
     "role": "Concept Art",
     "year": "2023",
@@ -18,7 +74,7 @@
     "img": "https://images.unsplash.com/photo-1515405295579-ba7f452aaf8f?w=500&q=80"
   },
   {
-    "id": 2,
+    "id": 3,
     "title": "Cyber Grid",
     "role": "Frontend",
     "year": "2025",
@@ -27,7 +83,7 @@
     "img": "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=500&q=80"
   },
   {
-    "id": 3,
+    "id": 4,
     "title": "Data Flow",
     "role": "UX Research",
     "year": "2023",
@@ -36,7 +92,7 @@
     "img": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&q=80"
   },
   {
-    "id": 4,
+    "id": 5,
     "title": "Prism Logic",
     "role": "Branding",
     "year": "2024",
@@ -45,7 +101,7 @@
     "img": "https://images.unsplash.com/photo-1534239697886-90c3bc635629?w=500&q=80"
   },
   {
-    "id": 5,
+    "id": 6,
     "title": "Liquid Metal",
     "role": "Motion",
     "year": "2024",
@@ -54,49 +110,12 @@
     "img": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&q=80"
   },
   {
-    "id": 6,
+    "id": 7,
     "title": "Smoke Signals",
     "role": "Photography",
     "year": "2022",
     "tech": "Sony A7III",
     "client": "Editorial",
     "img": "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=500&q=80"
-  },
-  {
-    "id": 7,
-    "title": "Gradient Soul",
-    "role": "Web Design",
-    "year": "2025",
-    "tech": "CSS, WebGL",
-    "client": "Music Label",
-    "img": "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80"
-  },
-  {
-    "id": 8,
-    "title": "Gradient Soul",
-    "role": "Web Design",
-    "year": "2025",
-    "tech": "CSS, WebGL",
-    "client": "Music Label",
-    "img": "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80"
-  },
-  {
-    "id": 9,
-    "title": "Gradient Soul",
-    "role": "Web Design",
-    "year": "2025",
-    "tech": "CSS, WebGL",
-    "client": "Music Label",
-    "img": "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80"
-  },
-  {
-    "id": 10,
-    "title": "Gradient Soul",
-    "role": "Web Design",
-    "year": "2025",
-    "tech": "CSS, WebGL",
-    "client": "Music Label",
-    "img": "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80"
-   }
+  }
 ]
-```
