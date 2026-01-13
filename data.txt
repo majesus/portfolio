@@ -1,10 +1,10 @@
 [
   {
     "id": 0,
-    "title": "Neon Genesis",
+    "title": "Manolo",
     "role": "3D Design",
     "year": "2024",
-    "tech": "Blender, Octane",
+    "tech": "Manolo, Octane",
     "client": "Personal",
     "img": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=500&q=80"
   },
