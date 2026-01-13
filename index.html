@@ -251,30 +251,117 @@
       object-fit: contain;
     }
 
-    /* Bloque details (sustituye a la imagen) */
+    /* ==============================
+       DETAILS (MEJORA SOLO ESTÉTICA)
+       - SIN líneas blancas entre items
+       - Fondo degradado + “burbujas”
+       - Coherente con glass/atmosfera
+    ============================== */
     #lightbox-details {
       display: none;
-      padding: 22px;
+      position: relative;
+      padding: 20px 22px;
       max-height: 50vh;
       overflow: auto;
       line-height: 1.55;
-      font-size: 1rem;
-      color: #eaeaea;
+      font-size: 0.98rem;
+      color: rgba(255,255,255,0.92);
+
+      /* base glass */
+      background:
+        radial-gradient(900px 420px at 18% 14%, rgba(0,255,157,0.10), rgba(0,0,0,0) 55%),
+        radial-gradient(720px 380px at 78% 26%, rgba(140,80,255,0.09), rgba(0,0,0,0) 60%),
+        radial-gradient(820px 420px at 56% 86%, rgba(255,255,255,0.06), rgba(0,0,0,0) 62%),
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
     }
 
-    /* Render tipo lista */
-    #lightbox-details ul {
-      list-style: none;
-      padding-left: 0;
-      margin: 0;
-      display: grid;
-      gap: 10px;
+    /* capa burbujas (muy suave) */
+    #lightbox-details::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.9;
+      background:
+        radial-gradient(20px 20px at 12% 22%, rgba(255,255,255,0.10), rgba(255,255,255,0) 70%),
+        radial-gradient(26px 26px at 28% 68%, rgba(0,255,157,0.12), rgba(0,255,157,0) 72%),
+        radial-gradient(18px 18px at 44% 34%, rgba(255,255,255,0.08), rgba(255,255,255,0) 70%),
+        radial-gradient(30px 30px at 60% 78%, rgba(140,80,255,0.10), rgba(140,80,255,0) 74%),
+        radial-gradient(22px 22px at 74% 40%, rgba(255,255,255,0.08), rgba(255,255,255,0) 72%),
+        radial-gradient(16px 16px at 86% 60%, rgba(0,255,157,0.10), rgba(0,255,157,0) 70%);
+      filter: blur(0.2px);
+      mix-blend-mode: screen;
     }
-    #lightbox-details li {
-      padding: 10px 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
+
+    /* capa brillo diagonal sutil */
+    #lightbox-details::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0) 45%, rgba(0,0,0,0) 100%);
+      opacity: 0.45;
+    }
+
+    /* scrollbar sutil */
+    #lightbox-details::-webkit-scrollbar { width: 10px; }
+    #lightbox-details::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+    #lightbox-details::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.14);
       border-radius: 10px;
+      border: 3px solid rgba(0,0,0,0.35);
+    }
+
+    /* lista tipo timeline (sin líneas separadoras) */
+    .details-list {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;          /* separación por aire */
+      margin: 0;
+      padding: 0;
+      z-index: 1;         /* encima de las burbujas */
+    }
+
+    .details-item {
+      position: relative;
+      padding: 12px 12px 12px 18px;
+      border: 0;          /* NO líneas */
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+
+    /* marcador/acento */
+    .details-item::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 18px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.8;
+      box-shadow: 0 0 12px rgba(0,255,157,0.45);
+    }
+
+    .details-item:hover {
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* rail vertical suave */
+    .details-rail {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      bottom: 10px;
+      width: 1px;
+      background: linear-gradient(180deg, rgba(0,255,157,0.0), rgba(0,255,157,0.22), rgba(0,255,157,0.0));
+      opacity: 0.55;
+      z-index: 1;
+      pointer-events: none;
     }
 
     /* Modo details */
@@ -477,10 +564,7 @@
       try {
         statusText.innerText = `Leyendo ${file.name}...`;
         const text = await file.text();
-
-        // Limpieza: si el JSON está dentro de ```...```, lo quitamos
         const cleaned = text.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
-
         const data = JSON.parse(cleaned);
         if (!Array.isArray(data) || data.length === 0) {
           throw new Error('El archivo seleccionado no es una lista JSON válida.');
@@ -503,23 +587,18 @@
         statusText.innerText = "Buscando datos externos...";
         const response = await fetch(CONFIG.dataFile, { cache: 'no-store' });
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
         const data = await response.json();
         if (!Array.isArray(data) || data.length === 0) throw new Error("data.txt vacío o no válido (debe ser lista).");
-
         statusText.innerText = `Construyendo Grafo (${data.length} nodos)...`;
         await new Promise(r => setTimeout(r, 350));
         initGraph(data);
-
       } catch (error) {
         console.warn("Fallo carga externa, mostrando opciones:", error);
         statusText.innerText = "No se pudo cargar data.txt";
         errorMsg.style.display = 'block';
-
         const hint = (location.protocol === 'file:')
           ? "Estás abriendo el HTML como file://. En ese modo el navegador suele bloquear fetch()."
           : "Comprueba que data.txt está en la misma carpeta y que el servidor lo sirve (200 OK).";
-
         errorMsg.innerText = `${hint}\n\nDetalle: ${error.message}`;
         actions.style.display = 'flex';
       }
@@ -776,7 +855,6 @@
     const lbDetails = document.getElementById('lightbox-details');
 
     function normalizeDetails(details) {
-      // Devuelve { has: boolean, items: string[] }
       if (Array.isArray(details)) {
         const items = details.map(x => String(x).trim()).filter(Boolean);
         return { has: items.length > 0, items };
@@ -789,15 +867,23 @@
     }
 
     function renderDetails(items) {
-      // Lista bonita
       lbDetails.innerHTML = '';
-      const ul = document.createElement('ul');
+
+      const rail = document.createElement('div');
+      rail.className = 'details-rail';
+      lbDetails.appendChild(rail);
+
+      const list = document.createElement('div');
+      list.className = 'details-list';
+
       items.forEach(line => {
-        const li = document.createElement('li');
-        li.textContent = line;
-        ul.appendChild(li);
+        const row = document.createElement('div');
+        row.className = 'details-item';
+        row.textContent = line;
+        list.appendChild(row);
       });
-      lbDetails.appendChild(ul);
+
+      lbDetails.appendChild(list);
     }
 
     function openLightbox(data) {
