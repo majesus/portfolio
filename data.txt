@@ -1,0 +1,102 @@
+[
+  {
+    "id": 0,
+    "title": "Neon Genesis",
+    "role": "3D Design",
+    "year": "2024",
+    "tech": "Blender, Octane",
+    "client": "Personal",
+    "img": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=500&q=80"
+  },
+  {
+    "id": 1,
+    "title": "Void Walker",
+    "role": "Concept Art",
+    "year": "2023",
+    "tech": "Photoshop, AI",
+    "client": "Ubisoft",
+    "img": "https://images.unsplash.com/photo-1515405295579-ba7f452aaf8f?w=500&q=80"
+  },
+  {
+    "id": 2,
+    "title": "Cyber Grid",
+    "role": "Frontend",
+    "year": "2025",
+    "tech": "Three.js, Vue",
+    "client": "TechCorp",
+    "img": "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=500&q=80"
+  },
+  {
+    "id": 3,
+    "title": "Data Flow",
+    "role": "UX Research",
+    "year": "2023",
+    "tech": "Figma, Principle",
+    "client": "FinTech App",
+    "img": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&q=80"
+  },
+  {
+    "id": 4,
+    "title": "Prism Logic",
+    "role": "Branding",
+    "year": "2024",
+    "tech": "Illustrator",
+    "client": "Startup",
+    "img": "https://images.unsplash.com/photo-1534239697886-90c3bc635629?w=500&q=80"
+  },
+  {
+    "id": 5,
+    "title": "Liquid Metal",
+    "role": "Motion",
+    "year": "2024",
+    "tech": "After Effects",
+    "client": "Agency",
+    "img": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&q=80"
+  },
+  {
+    "id": 6,
+    "title": "Smoke Signals",
+    "role": "Photography",
+    "year": "2022",
+    "tech": "Sony A7III",
+    "client": "Editorial",
+    "img": "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=500&q=80"
+  },
+  {
+    "id": 7,
+    "title": "Gradient Soul",
+    "role": "Web Design",
+    "year": "2025",
+    "tech": "CSS, WebGL",
+    "client": "Music Label",
+    "img": "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80"
+  },
+  {
+    "id": 8,
+    "title": "Gradient Soul",
+    "role": "Web Design",
+    "year": "2025",
+    "tech": "CSS, WebGL",
+    "client": "Music Label",
+    "img": "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80"
+  },
+  {
+    "id": 9,
+    "title": "Gradient Soul",
+    "role": "Web Design",
+    "year": "2025",
+    "tech": "CSS, WebGL",
+    "client": "Music Label",
+    "img": "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80"
+  },
+  {
+    "id": 10,
+    "title": "Gradient Soul",
+    "role": "Web Design",
+    "year": "2025",
+    "tech": "CSS, WebGL",
+    "client": "Music Label",
+    "img": "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80"
+   }
+]
+```

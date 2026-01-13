@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portfolio Neural</title>
+    <style>
+        :root {
+            --bg-color: #08080a;
+            --text-color: #ffffff;
+            --accent: #00ff9d;
+            --error: #ff3355;
+            --glass: rgba(20, 20, 25, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            touch-action: none;
+        }
+
+        /* --- CARGADOR Y ERRORES --- */
+        #loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #666;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .error-msg {
+            color: var(--error);
+            max-width: 300px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- CRT & NOISE OVERLAY --- */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            z-index: 900;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 899;
+            opacity: 0.03;
+            pointer-events: none;
+            /* Inline SVG Noise for performance/portability */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);
+            z-index: 898;
+            pointer-events: none;
+        }
+
+        #game-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.05s ease-out;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #node-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .node {
+            position: absolute;
+            width: 70px; 
+            height: 70px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-color: #1a1a1a; /* Fallback color */
+            pointer-events: auto;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: border-color 0.2s, box-shadow 0.2s; 
+            will-change: transform;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transform-origin: center center; 
+        }
+
+        .node.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 25px var(--accent);
+            z-index: 100 !important;
+        }
+
+        /* --- UI OVERLAY --- */
+        .ui-top {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 950;
+            pointer-events: none;
+            opacity: 0; /* Oculto hasta que cargue */
+            transition: opacity 1s;
+        }
+        
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .hint span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* --- LIGHTBOX --- */
+        #lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #lightbox.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .lb-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .lb-image-wrapper {
+            position: relative;
+            max-width: 100%;
+            max-height: 50vh;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+            background: #111;
+        }
+
+        #lightbox.active .lb-image-wrapper {
+            transform: scale(1) translateY(0);
+        }
+
+        #lightbox-img {
+            display: block;
+            max-width: 100%;
+            max-height: 50vh;
+            object-fit: contain;
+        }
+
+        .info-panel {
+            background: var(--glass);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 24px;
+            border-radius: 24px 24px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            color: white;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        }
+
+        #lightbox.active .info-panel {
+            transform: translateY(0);
+        }
+
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .project-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .project-meta {
+            font-size: 0.85rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .project-year {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .info-item h4 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .info-item p {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .close-btn-float {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            z-index: 100;
+            transition: background 0.2s, transform 0.2s;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Carga y Errores -->
+    <div id="loader-overlay">
+        <div class="spinner"></div>
+        <div class="status-text" id="status-text">Inicializando Neural Core...</div>
+        <div class="status-text error-msg" id="error-msg"></div>
+    </div>
+
+    <!-- Capas de Efectos Visuales -->
+    <div class="noise"></div>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div id="game-layer">
+        <canvas id="webCanvas"></canvas>
+        <canvas id="particleCanvas"></canvas>
+        <div id="node-container"></div>
+    </div>
+
+    <div class="ui-top">
+        <h1>PORTFOLIO_NET</h1>
+        <div class="hint"><span></span>Toca y arrastra</div>
+    </div>
+
+    <div id="lightbox">
+        <button class="close-btn-float">&times;</button>
+        <div class="lb-content">
+            <div class="lb-image-wrapper">
+                <img src="" id="lightbox-img" alt="Project">
+            </div>
+        </div>
+        <div class="info-panel">
+            <div class="info-header">
+                <div>
+                    <div class="project-title" id="info-title"></div>
+                    <div class="project-meta" id="info-role"></div>
+                </div>
+                <div class="project-year" id="info-year"></div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>Tech Stack</h4>
+                    <p id="info-tech"></p>
+                </div>
+                <div class="info-item">
+                    <h4>Client</h4>
+                    <p id="info-client"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN
+        const CONFIG = {
+            nodeSize: window.innerWidth < 600 ? 60 : 80,
+            connectionDistance: window.innerWidth < 600 ? 180 : 250,
+            friction: 0.92,
+            springStrength: 0.03,
+            repulsion: 400,
+            dataFile: 'data.txt' // Nombre del archivo externo
+        };
+
+        // DATOS DE RESPALDO (Fallback por si se abre localmente sin servidor)
+        const BACKUP_DATA = [
+            { id: 0, title: "Neon Genesis", role: "3D Design", year: "2024", tech: "Blender, Octane", client: "Personal", img: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=500&q=80" },
+            { id: 1, title: "Void Walker", role: "Concept Art", year: "2023", tech: "Photoshop, AI", client: "Ubisoft", img: "https://images.unsplash.com/photo-1515405295579-ba7f452aaf8f?w=500&q=80" },
+            { id: 2, title: "Cyber Grid", role: "Frontend", year: "2025", tech: "Three.js, Vue", client: "TechCorp", img: "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=500&q=80" },
+            { id: 3, title: "Data Flow", role: "UX Research", year: "2023", tech: "Figma, Principle", client: "FinTech App", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=500&q=80" },
+            { id: 4, title: "Prism Logic", role: "Branding", year: "2024", tech: "Illustrator", client: "Startup", img: "https://images.unsplash.com/photo-1534239697886-90c3bc635629?w=500&q=80" },
+            { id: 5, title: "Liquid Metal", role: "Motion", year: "2024", tech: "After Effects", client: "Agency", img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&q=80" },
+            { id: 6, title: "Smoke Signals", role: "Photography", year: "2022", tech: "Sony A7III", client: "Editorial", img: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=500&q=80" },
+            { id: 7, title: "Gradient Soul", role: "Web Design", year: "2025", tech: "CSS, WebGL", client: "Music Label", img: "https://images.unsplash.com/photo-1614851099175-e5b30eb6f696?w=500&q=80" }
+        ];
+
+        // ESTADO GLOBAL
+        let nodes = [];
+        let particles = [];
+        const canvas = document.getElementById('webCanvas');
+        const ctx = canvas.getContext('2d');
+        const pCanvas = document.getElementById('particleCanvas');
+        const pCtx = pCanvas.getContext('2d');
+        const container = document.getElementById('node-container');
+        const gameLayer = document.getElementById('game-layer');
+        let width, height;
+        let draggedNode = null;
+        let mouseX = 0, mouseY = 0;
+        let timeScale = 1.0; 
+
+        // --- SISTEMA DE CARGA BLINDADO ---
+        async function loadPortfolioData() {
+            const statusText = document.getElementById('status-text');
+            const errorMsg = document.getElementById('error-msg');
+            const spinner = document.querySelector('.spinner');
+
+            try {
+                statusText.innerText = "Buscando datos externos...";
+                
+                // Intento de fetch
+                const response = await fetch(CONFIG.dataFile);
+                
+                // Verificación HTTP
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                // Intento de parseo
+                const data = await response.json();
+
+                // Validación de estructura
+                if (!Array.isArray(data) || data.length === 0) {
+                    throw new Error("El archivo data.txt está vacío o no es una lista válida.");
+                }
+
+                statusText.innerText = "Construyendo Grafo...";
+                
+                // Pequeño delay artificial para que se vea la transición cool
+                await new Promise(r => setTimeout(r, 500));
+                
+                initGraph(data);
+
+            } catch (error) {
+                console.warn("Fallo carga externa (CORS/Offline), usando datos integrados:", error);
+                // En lugar de mostrar error fatal, usamos el backup
+                statusText.innerText = "Modo Local: Usando datos internos...";
+                
+                await new Promise(r => setTimeout(r, 800)); // Delay para leer el mensaje
+                initGraph(BACKUP_DATA);
+            }
+        }
+
+        // --- INICIALIZACIÓN DEL GRAFO ---
+        function initGraph(portfolioData) {
+            resize();
+            window.addEventListener('resize', resize);
+            
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            // Creación segura de nodos
+            portfolioData.forEach((data, i) => {
+                // Validación individual de cada item
+                if(!data.img) {
+                    console.warn(`Item ${i} incompleto, saltando...`);
+                    return;
+                }
+                
+                // Pequeño offset para que no nazcan todos en el píxel exacto
+                const offsetX = (Math.random() - 0.5) * 10;
+                const offsetY = (Math.random() - 0.5) * 10;
+                nodes.push(new Node(data, centerX + offsetX, centerY + offsetY));
+            });
+
+            // Ocultar loader
+            const loader = document.getElementById('loader-overlay');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                document.querySelector('.ui-top').style.opacity = '1';
+            }, 500);
+
+            // Listeners
+            window.addEventListener('mousemove', handleInput);
+            window.addEventListener('touchmove', handleInput, {passive: false});
+            window.addEventListener('mouseup', stopDrag);
+            window.addEventListener('touchend', stopDrag);
+
+            loop();
+        }
+
+        // --- SISTEMAS DE EFECTOS ---
+        function pulse(intensity = 10) {
+            if (navigator.vibrate) navigator.vibrate(intensity);
+        }
+
+        function screenShake(intensity) {
+            const x = (Math.random() - 0.5) * intensity;
+            const y = (Math.random() - 0.5) * intensity;
+            gameLayer.style.transform = `translate(${x}px, ${y}px)`;
+            setTimeout(() => {
+                gameLayer.style.transform = `translate(0px, 0px)`;
+            }, 50);
+        }
+
+        // --- CLASES Y LÓGICA ---
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.life = 1;
+                this.decay = Math.random() * 0.03 + 0.02;
+                this.color = color;
+                this.size = Math.random() * 3 + 1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+                this.size *= 0.95;
+            }
+            draw(ctx) {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function spawnParticles(x, y, count = 10, color = '#fff') {
+            for(let i=0; i<count; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        class Node {
+            constructor(data, x, y) {
+                this.data = data;
+                this.x = x;
+                this.y = y;
+                // Velocidad de explosión inicial (Big Bang)
+                const angle = Math.random() * Math.PI * 2;
+                const force = Math.random() * 15 + 5; 
+                this.vx = Math.cos(angle) * force;
+                this.vy = Math.sin(angle) * force;
+                
+                this.radius = CONFIG.nodeSize / 2;
+                this.scaleX = 1;
+                this.scaleY = 1;
+                
+                this.element = document.createElement('div');
+                this.element.className = 'node';
+                this.element.style.backgroundImage = `url(${data.img})`;
+                this.element.style.width = `${CONFIG.nodeSize}px`;
+                this.element.style.height = `${CONFIG.nodeSize}px`;
+                
+                const startHandler = (e) => this.startDrag(e);
+                this.element.addEventListener('mousedown', startHandler);
+                this.element.addEventListener('touchstart', startHandler, {passive: false});
+                
+                container.appendChild(this.element);
+            }
+
+            startDrag(e) {
+                if(e.cancelable) e.preventDefault();
+                draggedNode = this;
+                this.dragStartX = this.x;
+                this.dragStartY = this.y;
+                this.wasDragged = false;
+                this.element.classList.add('active');
+                pulse(15);
+                this.scaleX = 1.2;
+                this.scaleY = 0.8;
+            }
+
+            update() {
+                let dt = (this === draggedNode) ? 1.0 : timeScale;
+
+                if (this === draggedNode) {
+                    const ax = (mouseX - this.x) * 0.2;
+                    const ay = (mouseY - this.y) * 0.2;
+                    this.vx = ax;
+                    this.vy = ay;
+                    
+                    const speed = Math.sqrt(this.vx**2 + this.vy**2);
+                    this.scaleX = 1 + Math.min(speed * 0.01, 0.3);
+                    this.scaleY = 1 - Math.min(speed * 0.01, 0.3);
+
+                } else {
+                    this.vx *= CONFIG.friction;
+                    this.vy *= CONFIG.friction;
+                    this.scaleX += (1 - this.scaleX) * 0.1 * dt;
+                    this.scaleY += (1 - this.scaleY) * 0.1 * dt;
+                }
+
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+
+                let bounced = false;
+                if (this.x < this.radius) { this.x = this.radius; this.vx *= -1; bounced = true; }
+                if (this.x > width - this.radius) { this.x = width - this.radius; this.vx *= -1; bounced = true; }
+                if (this.y < this.radius) { this.y = this.radius; this.vy *= -1; bounced = true; }
+                if (this.y > height - this.radius) { this.y = height - this.radius; this.vy *= -1; bounced = true; }
+
+                if (bounced && (Math.abs(this.vx) > 5 || Math.abs(this.vy) > 5) && this === draggedNode) {
+                    pulse(5);
+                }
+
+                this.element.style.transform = `
+                    translate3d(${this.x - this.radius}px, ${this.y - this.radius}px, 0) 
+                    scale(${this.scaleX}, ${this.scaleY})
+                `;
+            }
+        }
+
+        // --- HELPERS ---
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = pCanvas.width = width;
+            canvas.height = pCanvas.height = height;
+        }
+
+        function handleInput(e) {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            mouseX = clientX;
+            mouseY = clientY;
+
+            if (draggedNode) {
+                const dx = mouseX - draggedNode.dragStartX;
+                const dy = mouseY - draggedNode.dragStartY;
+                if (dx*dx + dy*dy > 20) draggedNode.wasDragged = true;
+            }
+        }
+
+        function stopDrag() {
+            if (draggedNode) {
+                draggedNode.element.classList.remove('active');
+                
+                if (!draggedNode.wasDragged) {
+                    openLightbox(draggedNode.data);
+                    spawnParticles(draggedNode.x, draggedNode.y, 15, '#00ff9d');
+                    pulse(10);
+                } else {
+                    if (Math.abs(draggedNode.vx) > 15 || Math.abs(draggedNode.vy) > 15) {
+                        screenShake(5);
+                    }
+                }
+            }
+            draggedNode = null;
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, width, height);
+            pCtx.clearRect(0, 0, width, height);
+
+            const targetTimeScale = draggedNode ? 0.1 : 1.0;
+            timeScale += (targetTimeScale - timeScale) * 0.1;
+
+            for (let i = 0; i < nodes.length; i++) {
+                let nodeA = nodes[i];
+
+                for (let j = i + 1; j < nodes.length; j++) {
+                    let nodeB = nodes[j];
+                    let dx = nodeB.x - nodeA.x;
+                    let dy = nodeB.y - nodeA.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+
+                    if (dist < CONFIG.nodeSize * 2) {
+                        let force = (CONFIG.nodeSize * 2 - dist) / (CONFIG.nodeSize * 2);
+                        let repX = (dx / dist) * force * CONFIG.repulsion * 0.05;
+                        let repY = (dy / dist) * force * CONFIG.repulsion * 0.05;
+                        
+                        let dtA = (nodeA === draggedNode) ? 1.0 : timeScale;
+                        let dtB = (nodeB === draggedNode) ? 1.0 : timeScale;
+
+                        nodeA.vx -= repX * dtA; nodeA.vy -= repY * dtA;
+                        nodeB.vx += repX * dtB; nodeB.vy += repY * dtB;
+                    }
+
+                    if (dist < CONFIG.connectionDistance) {
+                        let force = (dist - 150) * CONFIG.springStrength;
+                        let springX = (dx / dist) * force;
+                        let springY = (dy / dist) * force;
+                        
+                        let dtA = (nodeA === draggedNode) ? 1.0 : timeScale;
+                        let dtB = (nodeB === draggedNode) ? 1.0 : timeScale;
+
+                        nodeA.vx += springX * dtA; nodeA.vy += springY * dtA;
+                        nodeB.vx -= springX * dtB; nodeB.vy -= springY * dtB;
+
+                        const alpha = 1 - (dist / CONFIG.connectionDistance);
+                        ctx.beginPath();
+                        const r = Math.floor(0 + (1-timeScale)*255);
+                        ctx.strokeStyle = `rgba(${r}, 255, 157, ${alpha * 0.6})`;
+                        ctx.lineWidth = 1 + alpha * 2;
+                        ctx.moveTo(nodeA.x, nodeA.y);
+                        
+                        const t = Date.now() * 0.005 * (timeScale * 0.5 + 0.5); 
+                        const midX = (nodeA.x + nodeB.x) / 2 + Math.sin(t + i)*5;
+                        const midY = (nodeA.y + nodeB.y) / 2 + Math.cos(t + j)*5;
+                        ctx.quadraticCurveTo(midX, midY, nodeB.x, nodeB.y);
+                        ctx.stroke();
+                    }
+                }
+                nodeA.update();
+            }
+
+            for(let i = particles.length -1; i >= 0; i--) {
+                let p = particles[i];
+                p.update();
+                p.draw(pCtx);
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        const lightbox = document.getElementById('lightbox');
+        
+        function openLightbox(data) {
+            document.getElementById('lightbox-img').src = data.img;
+            document.getElementById('info-title').innerText = data.title || "Sin título";
+            document.getElementById('info-role').innerText = data.role || "Role N/A";
+            document.getElementById('info-year').innerText = data.year || "----";
+            document.getElementById('info-tech').innerText = data.tech || "N/A";
+            document.getElementById('info-client').innerText = data.client || "N/A";
+            
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+        }
+
+        document.querySelector('.close-btn-float').addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (e) => {
+            if(e.target.classList.contains('lb-content')) closeLightbox();
+        });
+
+        // INICIAR CARGA
+        loadPortfolioData();
+
+    </script>
+</body>
+</html>
